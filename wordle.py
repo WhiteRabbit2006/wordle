@@ -1,5 +1,6 @@
 import words as w
 
+
 def getWord():  # get word, check length, check if word
     flag1 = True
     flag2 = True
@@ -15,6 +16,7 @@ def getWord():  # get word, check length, check if word
         if (flag1 == True or flag2 == True) and word != "stop":
             print("That is not a 5 letter word.")
     return list(word)
+
 
 def getResult():  # get result, check digits, check length
     flag1 = True
@@ -41,7 +43,6 @@ def getResult():  # get result, check digits, check length
     return arrResult
 
 
-
 if "__main__" == __name__:  # executes possible guesses
     cont = True
     greyLets = []  # aggregate grey letters
@@ -54,7 +55,7 @@ if "__main__" == __name__:  # executes possible guesses
     newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
     print("Enter \"stop\" at any time to stop.\n")
 
-    while cont == True:  # runs repeatedly until word is guessed
+    while cont:  # runs repeatedly until word is guessed
         word = getWord()
         if word == list("stop"):
             break
