@@ -3,7 +3,8 @@ import words as w
 def getWord():  # get word, check length, check if word
     flag1 = True
     flag2 = True
-    while flag1 == True or flag2 == True:
+    word = ""
+    while (flag1 == True or flag2 == True) and word != "stop":
         word = input("Input the word: ")
         if len(word) == 5:
             flag1 = False
@@ -11,18 +12,21 @@ def getWord():  # get word, check length, check if word
             flag2 = False
         else:
             flag2 = True
-            print("word not found")
-        if flag1 == True or flag2 == True:
+        if (flag1 == True or flag2 == True) and word != "stop":
             print("That is not a 5 letter word.")
     return list(word)
 
 def getResult():  # get result, check digits, check length
     flag1 = True
     flag2 = False
-    while not flag1 or not flag2:
+    result = ""
+    while (not flag1 or not flag2) and not result == "stop":
         flag1 = True
         flag2 = False
         result = input("Input the result (GREY 0, YELLOW 1, GREEN 2): ")
+        if result == "stop":
+            arrResult = list("stop")
+            break
         arrResult = [int(a) for a in result]
         for num in arrResult:
             if num != 0 and num != 1 and num != 2:
@@ -37,8 +41,9 @@ def getResult():  # get result, check digits, check length
     return arrResult
 
 
+
 if "__main__" == __name__:  # executes possible guesses
-    cont = "Yes"
+    cont = True
     greyLets = []  # aggregate grey letters
     yellowLets = []  # aggregate yellow letters
     yellowNums = []  # indices of yellow letters
@@ -47,11 +52,17 @@ if "__main__" == __name__:  # executes possible guesses
     greenNums = []  # aggregate indices of green letters
     currentPossibilities = [w.allWords]  # list of all possible words (updated per iteration)
     newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
+    print("Enter \"stop\" at any time to stop.\n")
 
-    while cont == "Yes" or cont == "yes":  # runs repeatedly until word is guessed
+    while cont == True:  # runs repeatedly until word is guessed
         word = getWord()
+        if word == list("stop"):
+            break
         result = getResult()
-        noGrey = []
+        if result == list("stop"):
+            break
+        noGrey = []  # indices that are not to be checked for grey letters
+        wordlePossibilities = []  # all possible wordle solutions, updates per iteration
 
         # populate greyLets
         for num, let in zip(result, word):
@@ -119,12 +130,30 @@ if "__main__" == __name__:  # executes possible guesses
                         add = False
                 if add == True:
                     newPossibilities += [wordle]
+        for wordle in w.wordles:
+            add = True
+            i = 0
+            for letter in list(wordle):
+                if letter in greyLets and not i in noGrey:
+                    add = False
+                i += 1
+            for yellow in yellowLets:  # check for yellow letters in word
+                if not yellow in wordle:
+                    add = False
+            i = 0
+            for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                if wordle[num1] == let1:
+                    add = False
+            for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                if not wordle[num2] == let2:
+                    add = False
+            if add == True:
+                wordlePossibilities += [wordle]
         currentPossibilities = newPossibilities
         newPossibilities = []
-        print("Possible guesses:", currentPossibilities)  # prints all current possibilities
-        if len(currentPossibilities) == 1:
-            print("Puzzle complete!")
+        if len(wordlePossibilities) == 1:
+            print("\nPuzzle complete! The final word was:", wordlePossibilities[0])
             break
         else:
-            cont = input("Do you have another guess? (Yes or No): ")
-
+            print("\nPossible guesses:", currentPossibilities)  # prints all current guess possibilities
+            print("Possible solutions:", str(wordlePossibilities) + "\n")  # prints all current solution possibilities
