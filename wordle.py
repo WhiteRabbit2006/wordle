@@ -7,18 +7,16 @@ def getWord():  # get word, check length, check if word
         word = input("Input the word: ")
         if len(word) == 5:
             flag1 = False
-        if not word in w.words[word[0]]:
+        if word in w.words[word[0]]:
+            flag2 = False
+        else:
             flag2 = True
             print("word not found")
-        else:
-            flag2 = False
-            print("word found")
         if flag1 == True or flag2 == True:
             print("That is not a 5 letter word.")
     return list(word)
 
-def getResult():
-   # get result, check digits, check length
+def getResult():  # get result, check digits, check length
     flag1 = True
     flag2 = False
     while not flag1 or not flag2:
@@ -38,28 +36,29 @@ def getResult():
             flag2 = True
     return arrResult
 
-if __name__ == "__main__":
+
+if "__main__" == __name__:  # executes possible guesses
     cont = "Yes"
-    greyLets = []
-    yellowLets = []
-    yellowNums = []
-    startLet = False
-    greenLets = []
-    greenNums = []
-    currentPossibilities = [w.allWords]
-    newPossibilities = []
+    greyLets = []  # aggregate grey letters
+    yellowLets = []  # aggregate yellow letters
+    yellowNums = []  # indices of yellow letters
+    startLet = False  # makes more efficient if first letter is green
+    greenLets = []  # aggregate green letters
+    greenNums = []  # aggregate indices of green letters
+    currentPossibilities = [w.allWords]  # list of all possible words (updated per iteration)
+    newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
 
     while cont == "Yes" or cont == "yes":  # runs repeatedly until word is guessed
         word = getWord()
         result = getResult()
         noGrey = []
 
-        # list grey letters (are not in solution)
+        # populate greyLets
         for num, let in zip(result, word):
             if num == 0:
                 greyLets += [let]  # cumulative
 
-        # format yellow letters
+        # populate yellowLets and yellowNums
         i = 0
         for num, let in zip(result, word):
             if num == 1:
@@ -67,7 +66,7 @@ if __name__ == "__main__":
                 yellowNums += [i]
             i += 1
 
-        # format green letters
+        # populate greenLets and greenNums, sets startLet to True if starting letter known
         i = 0
         for num, let in zip(result, word):
             if num == 2:
