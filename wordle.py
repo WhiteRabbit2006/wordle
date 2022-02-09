@@ -1,10 +1,8 @@
 import words as w
 
-if __name__ == "__main__":
+def getWord():  # get word, check length, check if word
     flag1 = True
     flag2 = True
-
-    # get word, check length, check if word
     while flag1 == True or flag2 == True:
         word = input("Input the word: ")
         if len(word) == 5:
@@ -17,9 +15,12 @@ if __name__ == "__main__":
             print("word found")
         if flag1 == True or flag2 == True:
             print("That is not a 5 letter word.")
-    arrWord = list(word)
+    return list(word)
 
-    # get result, check digits, check length
+def getResult():
+   # get result, check digits, check length
+    flag1 = True
+    flag2 = False
     while not flag1 or not flag2:
         flag1 = True
         flag2 = False
@@ -35,75 +36,96 @@ if __name__ == "__main__":
             continue
         else:
             flag2 = True
+    return arrResult
 
-    # list grey letters (are not in solution)
+if __name__ == "__main__":
+    cont = "Yes"
     greyLets = []
-    for num, let in zip(arrResult, arrWord):
-        if num == 0:
-            greyLets += [let]
-
-    # format yellow letters
     yellowLets = []
     yellowNums = []
-    i = 0
-    for num, let in zip(arrResult, arrWord):
-        if num == 1:
-            yellowLets += [let]
-            yellowNums += [i]
-        i += 1
-
-    # format green letters
-    i = 0
     startLet = False
     greenLets = []
     greenNums = []
-    for num, let in zip(arrResult, arrWord):
-        if num == 2:
-            greenLets += [let]
-            greenNums += [i]
-        if i == 0 and num == 2:
-            startLet = True
-            firstLet = let
-        i += 1
+    currentPossibilities = [w.allWords]
+    newPossibilities = []
 
-    # gets possible guesses
-    possibleGuesses = []
+    while cont == "Yes" or cont == "yes":  # runs repeatedly until word is guessed
+        word = getWord()
+        result = getResult()
+        noGrey = []
 
-    if startLet == True:
-        for wordle in w.words[firstLet[0]]:
-            add = True
-            for grey in greyLets:  # check for grey letters
-                if grey in wordle:
-                    add = False
-            for yellow in yellowLets:  # check for yellow letters in word
-                if not yellow in wordle:
-                    add = False
-            i = 0
-            for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
-                if wordle[num1] == let1:
-                    add = False
-            for num2, let2 in zip(greenNums, greenLets):  # check green letters
-                if not wordle[num2] == let2:
-                    add = False
-            if add == True:
-                possibleGuesses += [wordle]
-    else:
-        for wordle in w.allWords:
-            add = True
-            for grey in greyLets:  # check for grey letters
-                if grey in wordle:
-                    add = False
-            for yellow in yellowLets:  # check for yellow letters in word
-                if not yellow in wordle:
-                    add = False
-            i = 0
-            for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
-                if wordle[num1] == let1:
-                    add = False
-            for num2, let2 in zip(greenNums, greenLets):  # check green letters
-                if not wordle[num2] == let2:
-                    add = False
-            if add == True:
-                possibleGuesses += [wordle]
+        # list grey letters (are not in solution)
+        for num, let in zip(result, word):
+            if num == 0:
+                greyLets += [let]  # cumulative
 
-    print("Possible guesses:", possibleGuesses)  # prints all current possibilities
+        # format yellow letters
+        i = 0
+        for num, let in zip(result, word):
+            if num == 1:
+                yellowLets += [let]
+                yellowNums += [i]
+            i += 1
+
+        # format green letters
+        i = 0
+        for num, let in zip(result, word):
+            if num == 2:
+                greenLets += [let]
+                greenNums += [i]
+                noGrey += [i]
+            if i == 0 and num == 2:
+                startLet = True
+                firstLet = let
+            i += 1
+
+        # gets possible guesses
+        if startLet == True:
+            for wordle in w.words[firstLet[0]]:
+                add = True
+                i = 0
+                for letter in list(wordle):
+                    if letter in greyLets and not i in noGrey:
+                        add = False
+                    i += 1
+                for yellow in yellowLets:  # check for yellow letters in word
+                    if not yellow in wordle:
+                        add = False
+                i = 0
+                for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                    if wordle[num1] == let1:
+                        add = False
+                for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                    if not wordle[num2] == let2:
+                        add = False
+                if add == True:
+                    newPossibilities += [wordle]
+        else:
+            for wordle in w.allWords:
+                add = True
+                i = 0
+                for letter in list(wordle):
+                    if letter in greyLets and not i in noGrey:
+                        add = False
+                    i += 1
+                for yellow in yellowLets:  # check for yellow letters in word
+                    if not yellow in wordle:
+                        add = False
+                i = 0
+                for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                    if wordle[num1] == let1:
+                        add = False
+                for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                    if not wordle[num2] == let2:
+                        add = False
+                if add == True:
+                    newPossibilities += [wordle]
+        currentPossibilities = newPossibilities
+        newPossibilities = []
+        print("Possible guesses:", currentPossibilities)  # prints all current possibilities
+        if len(currentPossibilities) == 1:
+            print("Puzzle complete!")
+            break
+        else:
+            cont = input("Do you have another guess? (Yes or No): ")
+
