@@ -1,7 +1,8 @@
-import words as w
+import words as w  # "words" is where all the words are stored
 
 
-def getWord():  # get word, check length, check if word
+# get word from user, check length, check if word
+def getWord():
     flag1 = True
     flag2 = True
     word = ""
@@ -18,7 +19,8 @@ def getWord():  # get word, check length, check if word
     return list(word)
 
 
-def getResult():  # get result, check digits, check length
+# get result from user, check digits, check length
+def getResult():
     flag1 = True
     flag2 = False
     result = ""
@@ -43,7 +45,8 @@ def getResult():  # get result, check digits, check length
     return arrResult
 
 
-if "__main__" == __name__:  # executes possible guesses
+# runs main code
+if "__main__" == __name__:
     cont = True
     greyLets = []  # aggregate grey letters
     yellowLets = []  # aggregate yellow letters
@@ -180,13 +183,14 @@ if "__main__" == __name__:  # executes possible guesses
                 wordlePossibilities += [wordle]
         currentPossibilities = newPossibilities
 
+        # populates letterFreq
         for alpha in w.alphabet:
             count = 0
             for i in range(5):
                 for possibleWord in currentPossibilities:
                     if possibleWord[i] == alpha:
                         count += 1
-                letterFreq[alpha][i] = count/len(currentPossibilities)
+                letterFreq[alpha][i] = count / len(currentPossibilities)
 
         print(letterFreq["b"][0])
 
