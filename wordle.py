@@ -192,8 +192,6 @@ if "__main__" == __name__:
                         count += 1
                 letterFreq[alpha][i] = count / len(currentPossibilities)
 
-        print(letterFreq["b"][0])
-
         if len(wordlePossibilities) == 1:
             print("\nPuzzle complete! The answer was:", wordlePossibilities[0])
             break
