@@ -52,7 +52,34 @@ if "__main__" == __name__:  # executes possible guesses
     greenLets = []  # aggregate green letters
     greenNums = []  # aggregate indices of green letters
     currentPossibilities = [w.allWords]  # list of all possible words (updated per iteration)
-    newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
+    letterFreq = {
+        "a": [0, 0, 0, 0, 0],
+        "b": [0, 0, 0, 0, 0],
+        "c": [0, 0, 0, 0, 0],
+        "d": [0, 0, 0, 0, 0],
+        "e": [0, 0, 0, 0, 0],
+        "f": [0, 0, 0, 0, 0],
+        "g": [0, 0, 0, 0, 0],
+        "h": [0, 0, 0, 0, 0],
+        "i": [0, 0, 0, 0, 0],
+        "j": [0, 0, 0, 0, 0],
+        "k": [0, 0, 0, 0, 0],
+        "l": [0, 0, 0, 0, 0],
+        "m": [0, 0, 0, 0, 0],
+        "n": [0, 0, 0, 0, 0],
+        "o": [0, 0, 0, 0, 0],
+        "p": [0, 0, 0, 0, 0],
+        "q": [0, 0, 0, 0, 0],
+        "r": [0, 0, 0, 0, 0],
+        "s": [0, 0, 0, 0, 0],
+        "t": [0, 0, 0, 0, 0],
+        "u": [0, 0, 0, 0, 0],
+        "v": [0, 0, 0, 0, 0],
+        "w": [0, 0, 0, 0, 0],
+        "x": [0, 0, 0, 0, 0],
+        "y": [0, 0, 0, 0, 0],
+        "z": [0, 0, 0, 0, 0]
+    }
     print("Enter \"stop\" at any time to stop.\n")
 
     while cont:  # runs repeatedly until word is guessed
@@ -64,6 +91,7 @@ if "__main__" == __name__:  # executes possible guesses
             break
         noGrey = []  # indices that are not to be checked for grey letters
         wordlePossibilities = []  # all possible wordle solutions, updates per iteration
+        newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
 
         # populate greyLets
         for num, let in zip(result, word):
@@ -151,10 +179,21 @@ if "__main__" == __name__:  # executes possible guesses
             if add == True:
                 wordlePossibilities += [wordle]
         currentPossibilities = newPossibilities
-        newPossibilities = []
+
+        for alpha in w.alphabet:
+            count = 0
+            for i in range(5):
+                for possibleWord in currentPossibilities:
+                    if possibleWord[i] == alpha:
+                        count += 1
+                letterFreq[alpha][i] = count/len(currentPossibilities)
+
+        print(letterFreq["b"][0])
+
         if len(wordlePossibilities) == 1:
-            print("\nPuzzle complete! The final word was:", wordlePossibilities[0])
+            print("\nPuzzle complete! The answer was:", wordlePossibilities[0])
             break
         else:
             print("\nPossible guesses:", currentPossibilities)  # prints all current guess possibilities
             print("Possible solutions:", str(wordlePossibilities) + "\n")  # prints all current solution possibilities
+
