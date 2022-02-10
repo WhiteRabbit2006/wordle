@@ -197,3 +197,10 @@ if "__main__" == __name__:  # executes possible guesses
             print("\nPossible guesses:", currentPossibilities)  # prints all current guess possibilities
             print("Possible solutions:", str(wordlePossibilities) + "\n")  # prints all current solution possibilities
 
+'''
+To get a score:
+Make big loop that tries every word(puzzle) in w.wordles
+Make compute_result function that compares word to puzzle
+Make count variable to keep track of guesses
+Make random guess generator to use instead of getWord
+'''
