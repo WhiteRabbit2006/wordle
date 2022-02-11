@@ -1,5 +1,6 @@
 import words as w  # "words" is where all words are stored
 import random
+import cProfile, pstats
 
 # get word from user, check length, check if word
 def getWord():
@@ -47,14 +48,13 @@ def getResult():
 
 # runs main code
 if "__main__" == __name__:
+
+    profiler = cProfile.Profile()
+    profiler.enable()
+
     cont = True
-    greyLets = []  # aggregate grey letters
-    yellowLets = []  # aggregate yellow letters
-    yellowNums = []  # indices of yellow letters
-    startLet = False  # makes more efficient if first letter is green
-    greenLets = []  # aggregate green letters
-    greenNums = []  # aggregate indices of green letters
-    currentPossibilities = [w.allWords]  # list of all possible words (updated per iteration)
+    words_solved = 0
+    all_guesses = []
     letterFreq = {
         "a": [0, 0, 0, 0, 0],
         "b": [0, 0, 0, 0, 0],
@@ -83,10 +83,156 @@ if "__main__" == __name__:
         "y": [0, 0, 0, 0, 0],
         "z": [0, 0, 0, 0, 0]
     }
-    print("Enter \"stop\" at any time to stop.\n")
 
+    for current_word in w.wordles:  # runs with random guesses until solution is found
+        greyLets = []  # aggregate grey letters
+        yellowLets = []  # aggregate yellow letters
+        yellowNums = []  # indices of yellow letters
+        startLet = False  # makes more efficient if first letter is green
+        greenLets = []  # aggregate green letters
+        greenNums = []  # aggregate indices of green letters
+        guesses = 0
+        current_possibilities = w.allWords  # list of all possible words (updated per iteration)
+        cont = True
+        while cont:
+            noGrey = []  # indices that are not to be checked for grey letters
+            wordlePossibilities = []  # all possible wordle solutions, updates per iteration
+            newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
+            guesses += 1
+            word = list(current_possibilities[random.randrange(0, len(current_possibilities) - 1)])  # chooses random word
+            current_word = list(current_word)
+            # compute_result function
+            result = [0, 0, 0, 0, 0]
+            checked_indices = []
+
+            i = 0
+            for solution_letter, guess_letter in zip(current_word, word):
+                if solution_letter == guess_letter:
+                    result[i] = 2
+                for result_index, current_word_letter in zip(result, current_word):
+                    if result[i] == 0 and guess_letter == current_word_letter:
+                        result[i] = 1
+                i += 1
+
+            # populate greyLets
+            for num, let in zip(result, word):
+                if num == 0:
+                    greyLets += [let]  # cumulative
+
+            # populate yellowLets and yellowNums
+            i = 0
+            for num, let in zip(result, word):
+                if num == 1:
+                    yellowLets += [let]
+                    yellowNums += [i]
+                i += 1
+
+            # populate greenLets and greenNums, sets startLet to True if starting letter known
+            i = 0
+            for num, let in zip(result, word):
+                if num == 2:
+                    greenLets += [let]
+                    greenNums += [i]
+                    noGrey += [i]
+                if i == 0 and num == 2:
+                    startLet = True
+                    firstLet = let
+                i += 1
+
+            # gets possible guesses
+            if startLet:
+                for wordle in w.words[firstLet[0]]:
+                    add = True
+                    i = 0
+                    for letter in list(wordle):
+                        if letter in greyLets and not i in noGrey:
+                            add = False
+                        i += 1
+                    for yellow in yellowLets:  # check for yellow letters in word
+                        if not yellow in wordle:
+                            add = False
+                    i = 0
+                    for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                        if wordle[num1] == let1:
+                            add = False
+                    for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                        if not wordle[num2] == let2:
+                            add = False
+                    if add:
+                        newPossibilities += [wordle]
+            else:
+                for wordle in w.allWords:
+                    add = True
+                    i = 0
+                    for letter in list(wordle):
+                        if letter in greyLets and not i in noGrey:
+                            add = False
+                        i += 1
+                    for yellow in yellowLets:  # check for yellow letters in word
+                        if not yellow in wordle:
+                            add = False
+                    i = 0
+                    for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                        if wordle[num1] == let1:
+                            add = False
+                    for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                        if not wordle[num2] == let2:
+                            add = False
+                    if add:
+                        newPossibilities.append(wordle)
+            for wordle in w.wordles:
+                add = True
+                i = 0
+                for letter in list(wordle):
+                    if letter in greyLets and not i in noGrey:
+                        add = False
+                    i += 1
+                for yellow in yellowLets:  # check for yellow letters in word
+                    if not yellow in wordle:
+                        add = False
+                i = 0
+                for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
+                    if wordle[num1] == let1:
+                        add = False
+                for num2, let2 in zip(greenNums, greenLets):  # check green letters
+                    if not wordle[num2] == let2:
+                        add = False
+                if add:
+                    wordlePossibilities.append(wordle)
+            currentPossibilities = newPossibilities
+
+            # populates letterFreq
+            for alpha in w.alphabet:
+                count = 0
+                for i in range(5):
+                    for possibleWord in currentPossibilities:
+                        if possibleWord[i] == alpha:
+                            count += 1
+            if len(wordlePossibilities) == 1 or len(current_possibilities) == 1:
+                all_guesses.append(guesses)
+                words_solved += 1
+                cont = False
+        if words_solved % 10 == 0:
+            print(str(words_solved/2315) + "\n")
+#        if words_solved > 100:
+#            break
+        #            letterFreq[alpha][i] = count / len(currentPossibilities)
+    print("\nAverage guesses per solution:", sum(all_guesses)/len(all_guesses))
+
+    profiler.disable()
+    stats = pstats.Stats(profiler)
+    stats.print_stats()
+
+'''
+Questions:
+how to handle all of the variables if I am to switch to functions
+how to have a prerequisite function without having to run it for every function independently, example: using result
+what to leave in main
+'''
+
+# Runner that asks user for guess and result of guess
 """
-Runner that asks user for guess and result of guess
+print("Enter \"stop\" at any time to stop.\n")
     while cont:  # runs repeatedly until word is guessed
         word = getWord()
         if word == list("stop"):
@@ -202,122 +348,6 @@ Runner that asks user for guess and result of guess
             print("Possible solutions:", str(wordlePossibilities) + "\n")  # prints all current solution possibilities
 """
 
-    for current_word in w.wordles:  # runs repeatedly until word is guessed
-        word = list(random.choice(currentPossibilities))  # chooses random word
-
-        # compute result function
-        result = [0, 0, 0, 0, 0]
-
-
-        noGrey = []  # indices that are not to be checked for grey letters
-        wordlePossibilities = []  # all possible wordle solutions, updates per iteration
-        newPossibilities = []  # refreshes per iteration, temporarily stores possibilities
-
-        # populate greyLets
-        for num, let in zip(result, word):
-            if num == 0:
-                greyLets += [let]  # cumulative
-
-        # populate yellowLets and yellowNums
-        i = 0
-        for num, let in zip(result, word):
-            if num == 1:
-                yellowLets += [let]
-                yellowNums += [i]
-            i += 1
-
-        # populate greenLets and greenNums, sets startLet to True if starting letter known
-        i = 0
-        for num, let in zip(result, word):
-            if num == 2:
-                greenLets += [let]
-                greenNums += [i]
-                noGrey += [i]
-            if i == 0 and num == 2:
-                startLet = True
-                firstLet = let
-            i += 1
-
-        # gets possible guesses
-        if startLet:
-            for wordle in w.words[firstLet[0]]:
-                add = True
-                i = 0
-                for letter in list(wordle):
-                    if letter in greyLets and not i in noGrey:
-                        add = False
-                    i += 1
-                for yellow in yellowLets:  # check for yellow letters in word
-                    if not yellow in wordle:
-                        add = False
-                i = 0
-                for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
-                    if wordle[num1] == let1:
-                        add = False
-                for num2, let2 in zip(greenNums, greenLets):  # check green letters
-                    if not wordle[num2] == let2:
-                        add = False
-                if add:
-                    newPossibilities += [wordle]
-        else:
-            for wordle in w.allWords:
-                add = True
-                i = 0
-                for letter in list(wordle):
-                    if letter in greyLets and not i in noGrey:
-                        add = False
-                    i += 1
-                for yellow in yellowLets:  # check for yellow letters in word
-                    if not yellow in wordle:
-                        add = False
-                i = 0
-                for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
-                    if wordle[num1] == let1:
-                        add = False
-                for num2, let2 in zip(greenNums, greenLets):  # check green letters
-                    if not wordle[num2] == let2:
-                        add = False
-                if add:
-                    newPossibilities += [wordle]
-        for wordle in w.wordles:
-            add = True
-            i = 0
-            for letter in list(wordle):
-                if letter in greyLets and not i in noGrey:
-                    add = False
-                i += 1
-            for yellow in yellowLets:  # check for yellow letters in word
-                if not yellow in wordle:
-                    add = False
-            i = 0
-            for num1, let1 in zip(yellowNums, yellowLets):  # check for yellow letters at guessed indices
-                if wordle[num1] == let1:
-                    add = False
-            for num2, let2 in zip(greenNums, greenLets):  # check green letters
-                if not wordle[num2] == let2:
-                    add = False
-            if add:
-                wordlePossibilities += [wordle]
-        currentPossibilities = newPossibilities
-
-        # populates letterFreq
-        for alpha in w.alphabet:
-            count = 0
-            for i in range(5):
-                for possibleWord in currentPossibilities:
-                    if possibleWord[i] == alpha:
-                        count += 1
-                letterFreq[alpha][i] = count / len(currentPossibilities)
-
-        if len(wordlePossibilities) == 1:
-            print("\nPuzzle complete! The answer was:", wordlePossibilities[0])
-            break
-        else:
-            print("\nPossible guesses:", currentPossibilities)  # prints all current guess possibilities
-            print("Possible solutions:", str(wordlePossibilities) + "\n")  # prints all current solution possibilities
-
-'''
-To get a score:
-Make compute_result function that compares word to puzzle
-Make count variable to keep track of guesses
-'''
+"""
+Random words average guesses per puzzle: 6.161987041036717
+"""
