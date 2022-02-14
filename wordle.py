@@ -47,19 +47,23 @@ def get_result():
     return arr_result
 
 
-# given guess and solution, returns result of guess
+# given guess and solution (as lists), returns result of guess
 def compute_result(guess, solution):
     result = [0, 0, 0, 0, 0]
     i = 0
     for solution_letter, guess_letter in zip(solution, guess):
         if solution_letter == guess_letter:
             result[i] = 2
-        for result_index, current_word_letter in zip(result, current_word):
-            if result[i] == 0 and guess_letter == current_word_letter:
-                result[i] = 1
+            solution[i] = "-"
+        i += 1
+    i = 0
+    while i < 5:
+        if result[i] == 0 and guess[i] in solution:
+            result[i] = 1
         i += 1
     return result
 
+print(compute_result(list("abbot"), list("robin")))
 
 # uses result and word to output letters and indices of different colors
 def use_result(word, result):
@@ -68,7 +72,7 @@ def use_result(word, result):
         [],  # yellow letters in the word
         [],  # indices of yellow letters in the word
         [],  # green letters in the word
-        []  # indices of green letters in the word
+        []   # indices of green letters in the word
     ]
     i = 0
     for num, let in zip(result, word):
@@ -131,7 +135,7 @@ if "__main__" == __name__:
             wordle_possibilities = [w.wordles]  # all possible wordle solutions, updates per iteration
             new_possibilities = []  # refreshes per iteration, temporarily stores possibilities
 
-            word = list(random.choice(current_possibilities))  # chooses random word from current possible guesses
+            word = list(random.choice(tuple(current_possibilities)))  # chooses random word from current possible guesses
 
             result = compute_result(word, current_word)
 
