@@ -22,42 +22,62 @@ class Hint:
     @classmethod
     def from_guess(cls, guess, solution):
         colors = [Color.GRAY] * 5
-        scratch_solution = solution
 
         # Determine the GREEN letters by testing for exact matches.  When a
-        # GREEN letter is found, overwrite that letter in the scratch solution
-        # in order to determine YELLOW letter correctly in the next step.
+        # GREEN letter is found, replace the matching letter in the solution
+        # with a "dummy" character (necessary for determining YELLOW
+        # characters).
         for i_letter in range(5):
             if guess[i_letter] == solution[i_letter]:
                 colors[i_letter] = Color.GREEN
-                scratch_solution = replace_letter(scratch_solution, i_letter)
+                solution = replace_letter(solution, i_letter)
+                # print("Letter %d (%s) is GREEN" % (i_letter, guess[i_letter]))
+                # print(solution)
 
         # Determine the YELLOW letters by testing for "containment" within the
-        # SCRATCH solution.  It is important to use the SCRATCH solution
-        # because of the confusing rules involving more than one of the same
-        # letter.  When a YELLOW letter is found, overwrite that letter in the
-        # scratch solution.
+        # solution.  When a YELLOW letter is found, replace the first instance
+        # of the "contained" letter with a "dummy" character (necessary for
+        # determining additional YELLOW letters).
         for i_letter in range(5):
             if colors[i_letter] is Color.GREEN:
                 continue
-            if guess[i_letter] in scratch_solution:
+            if guess[i_letter] in solution:
                 colors[i_letter] = Color.YELLOW
-                scratch_solution = replace_letter(scratch_solution, i_letter)
+                solution = replace_letter(solution, solution.index(guess[i_letter]))
+                # print("Letter %d (%s) is YELLOW" % (i_letter, guess[i_letter]))
+                # print(solution)
 
         # Return the hint
         return Hint(guess, colors)
 
     def is_word_compatible(self, word):
-        for i_letter in range(5):
 
-            # Return False if a GREEN letter does not match
+        # Return False if any GREEN letter does not match.  Replace matching
+        # GREEN letters in the word with a "dummy" character (necessary for
+        # further testing YELLOW and GRAY letters).
+        for i_letter in range(5):
             if self._colors[i_letter] == Color.GREEN:
                 if self._word[i_letter] != word[i_letter]:
                     return False
+                else:
+                    word = replace_letter(word, i_letter)
 
-            # Return False if a GRAY or YELLOW letter does match
-            else:
+        # Return False if any YELLOW letter does match, or if the word does
+        # not contain a YELLOW letter.  Replace "contained" YELLOW letters
+        # with a dummy character (necessay for further testing YELLOW letters).
+        for i_letter in range(5):
+            if self._colors[i_letter] == Color.YELLOW:
                 if self._word[i_letter] == word[i_letter]:
+                    return False
+                elif self._word[i_letter] not in word:
+                    return False
+                else:
+                    word = replace_letter(word, word.index(self._word[i_letter]))
+
+        # Return False if any GRAY letter appears in the word.
+        for i_letter in range(5):
+            if self._colors[i_letter] == Color.GRAY:
+                if self._word[i_letter] in word:
                     return False
 
         # All letters are compatible with the hint, return True
@@ -179,9 +199,11 @@ def test_guesser(guesser_class):
 
 
 if "__main__" == __name__:
-    # test_guesser(RandomGuesser)
-    # test_guesser(RandomScrabbleGuesser)
-    Game(Guesser(), "sauna").play(print_hint=True)
+    # test_guesser(RandomGuesser)  # 4.08
+    # test_guesser(RandomScrabbleGuesser)  # 4.03
+    # Game(Guesser(), "sauna").play(print_hint=True)
+    # Game(Guesser(), "cynic").play(print_hint=True)
+    # Game(Guesser(), "blind").play(print_hint=True)
+    # Game(Guesser()).play(print_hint=True)
 
 # human player known solution
-
